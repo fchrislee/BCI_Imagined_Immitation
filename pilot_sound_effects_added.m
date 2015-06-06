@@ -1,6 +1,5 @@
 
 
-
 ignore_emg =            1;          % 1: Force good EMG
 emg_channels =          18:21;      % Default: 18:21
 use_full_go =           0;          % 1: Average all segments in 'go' block, 0: Average 'average_segs' segments
@@ -39,16 +38,15 @@ if ~exist('data','var')
     data.left_scores_raw = [];
     data.right_scores_raw = [];
     R =      25;          %factor the ERD is multiplied by to scale for difficulty (ie, starts at 1)
-    L =      0;
-    present_sound = 0;
+    L =      0;  
 
 right_score = 1;
 t = 1;
 p = 5;
 q = 2;
 y = 0; 
-level_up = 5;
-level_down = 1;
+level_up = 3;
+level_down = 0;
 performance_right = 0;
 performance_left = 0;
 b = 1;
@@ -106,7 +104,7 @@ if data.trigger_state(end) < rest_cutoff_trig && data.trigger_state(end) > lowtr
   
     % If a rest trigger is received
 elseif data.trigger_state(end) > rest_cutoff_trig 
-    condition = 3;
+    
     current_state = data.trigger_state(end);
    %data.left_baseline = zeros;
     %data.right_baseline = zeros;
@@ -120,65 +118,83 @@ elseif data.trigger_state(end) > rest_cutoff_trig
     
     if t == 2 
         if performance_right >= p
-            present_sound = 1;
         
       
         
             if right_difficulty == 1 
             level_up = 5;
             level_down = 2;
-           
-            elseif right_difficulty == 2 
+            end 
             
-        
+            if right_difficulty == 2 
             level_up = 7;
          
+            end
             
             
-            elseif right_difficulty == 3 
+            
+            if right_difficulty == 3 
             
             L = 25;
             R = 0;
             level_up = -1;
             level_down = -4;
             
-            elseif right_difficulty == 4 || 5 
+            end
+            
+            if right_difficulty == 4
           
             level_up = level_up+2;
             level_down = level_down+2;
             
+            end
+            
+            if right_difficulty == 5
           
-             elseif right_difficulty == 6
+            level_up = level_up+2;
+            level_down = level_down+2;
+            
+            end
+            
+            
+            if right_difficulty == 6
           
             R= 25;
             level_up = level_up+2;
             level_down = level_down+2;
-           
-            elseif right_difficulty >6
-            level_up = level_up+3;
-            level_down = level_down+2;
             
-
             end
             
-            right_difficulty = right_difficulty+1;  
+           
+            if right_difficulty >6
+            level_up = level_up+3;
+            level_down = level_down+2;
+            end
+            
+            
+        right_difficulty = right_difficulty+1; 
+        
         end
+            
+            
     end
+   
     
     if t==2 
         
         if  performance_right <= q
-            present_sound = 2;
           
             
             if right_difficulty >7
             level_up = level_up-3;
             level_down = level_down-2;
+            end
+            
            
 
             
             
-            elseif right_difficulty == 7 
+            if right_difficulty == 7 
                 if t>1
                 
                     
@@ -189,9 +205,11 @@ elseif data.trigger_state(end) > rest_cutoff_trig
                   %  L = 0;
                % end
                 end
+            end
+            
                 
                 
-            elseif right_difficulty == 6 || 5 
+            if right_difficulty == 6
                 if t>1
                     
                 level_up = level_up-2;
@@ -200,25 +218,43 @@ elseif data.trigger_state(end) > rest_cutoff_trig
                   %  L = 0;
                % end
                 end
-             
+            end
+        
+            if right_difficulty == 5
+                if t>1
+                    
+                level_up = level_up-2;
+                level_down = level_down-2;
+                %if L<0
+                  %  L = 0;
+               % end
+                end
+            end
        
             
-            elseif right_difficulty == 4
+            if right_difficulty == 4
                  
                 R = 25; 
                 L = 0;
                 level_up = level_up+8;
                 level_down = level_down+6;
-            
-            elseif right_difficulty <4
-                level_up = level_up-2;
-                level_down = level_down-2;
-                
             end
+            
+            
+            if right_difficulty == 3
+                level_up = level_up-2;
+            end
+            
+            if right_difficulty == 2
+                if t>1
+                    level_up = level_up-2;
+                    level_down = level_down-2;
+                end
+            end
+            
                 
-                
-                
-          
+       
+        
                  
            right_difficulty = right_difficulty-1;
                  
@@ -335,9 +371,9 @@ data.right_scores(end+1) = right_score;
 
 
         subplot(2,2,1); bar([-right_ers -left_ers]);    % Left hand to left side, flipped so ERD is up
-        ylim([-15 45]); title('Beta ERD')
+        ylim([-15 15]); title('Beta ERD')
      subplot(2,2,2); bar(right_score_raw);    
-        ylim([-40 15]); title('moving score')
+        ylim([-10 15]); title('moving score')
          subplot(2,2,3); bar(right_difficulty);    
         ylim([0 8]); title('Difficulty level')
         subplot(2,2,4); bar(right_score);    
@@ -351,9 +387,6 @@ if condition == 1
     %fwrite(s,left_score_raw)
 elseif condition ==2
     fwrite(s,right_score)
-elseif condition == 3
-    fwrite(s,present_sound)
-    
 end
 
 
